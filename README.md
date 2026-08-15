@@ -29,12 +29,18 @@ Now edit `.env`. The example defaults to SQLite, so no server setup is needed fo
 
 Replace `JWT_SECRET_KEY` with a long random value, and set `ADMIN_EMAIL` / `ADMIN_PASSWORD` to what you want for the first administrator.
 
+Generate one with:
+
 ```bash
-# 4. Create the database tables (REQUIRED — do not skip)
+python3 -c "import secrets; print(secrets.token_urlsafe(32))"
+```
+
+```bash
+# 4. Create the database tables
 alembic upgrade head
 ```
 
-This step runs the migration that creates all seven tables (`users`, `categories`, `products`, `carts`, `cart_items`, `orders`, `order_items`). Skipping it leaves the database empty, and every route that touches the database will fail.
+This step runs the migration that creates all seven tables (`users`, `categories`, `products`, `carts`, `cart_items`, `orders`, `order_items`).
 
 ## Creating the first admin user
 
