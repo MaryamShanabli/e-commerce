@@ -74,37 +74,62 @@ The full suite is 64 tests covering auth, admin permissions, ownership enforceme
 
 ## Quick manual test
 
-With the app running (see above), confirm it works end to end:
+With the app running (see above), confirm it works end to end. Run these in order, in the same terminal session.
 
 ```bash
 # 1. Sign up a regular user
-curl -X POST http://127.0.0.1:8000/api/auth/sign-up \
+curl -s -X POST http://127.0.0.1:8000/api/auth/sign-up \
   -H "Content-Type: application/json" \
-  -d '{"name": "John Doe", "email": "john@example.com", "password": "SecurePass123!"}'
+  -d '{"name": "Maryam", "email": "maryam@example.com", "password": "Maryam123"}'
 
-# 2. Log in and capture the token
-curl -X POST http://127.0.0.1:8000/api/auth/login \
+# 2. Log in as Maryam and capture her token automatically
+MARYAM_TOKEN=$(curl -s -X POST http://127.0.0.1:8000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email": "john@example.com", "password": "SecurePass123!"}'
-```
+  -d '{"email": "maryam@example.com", "password": "Maryam123"}' \
+  | python3 -c "import json,sys; print(json.load(sys.stdin)['access_token'])")
 
-Then log in as the admin you created with the bootstrap script and use the token:
-
-```bash
-# 3. Log in as admin (email/password from your .env)
-curl -X POST http://127.0.0.1:8000/api/auth/login \
+# 3. Log in as admin (email/password from your .env) and capture the token
+ADMIN_TOKEN=$(curl -s -X POST http://127.0.0.1:8000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email": "admin@example.com", "password": "ChangeThisPassword123!"}'
+  -d '{"email": "admin@example.com", "password": "Admin123"}' \
+  | python3 -c "import json,sys; print(json.load(sys.stdin)['access_token'])")
 
-# 4. Create a category with the admin token (replace <TOKEN>)
-curl -X POST http://127.0.0.1:8000/api/category \
+# 4. Create a category as admin
+curl -s -X POST http://127.0.0.1:8000/api/category \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer <TOKEN>" \
-  -d '{"name": "Electronics"}'
-```
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -d '{"name": "Snacks"}'
 
-A non-admin token on step 4 returns `403` with `error_type: "ForbiddenException"`. You can also confirm the public read side at any time:
+# 5. Create a product as admin
+curl -s -X POST http://127.0.0.1:8000/api/product \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -d '{"name": "Chips", "price": 2.99, "description": "Pack of 6", "quantity": 200, "category_id": 1}'
 
-```bash
-curl http://127.0.0.1:8000/api/product
+# 6. Duplicate category name, expect 409
+curl -s -X POST http://127.0.0.1:8000/api/category \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -d '{"name": "Snacks"}'
+
+# 7. Non-admin blocked from admin action, expect 403
+curl -s -X POST http://127.0.0.1:8000/api/category \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $MARYAM_TOKEN" \
+  -d '{"name": "Beverages"}'
+
+# 8. Add the product to Maryam's cart
+curl -s -X POST "http://127.0.0.1:8000/api/cart/add?userID=1" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $MARYAM_TOKEN" \
+  -d '{"product_id": 1, "quantity": 2}'
+
+# 9. Checkout Maryam's cart
+curl -s -X POST http://127.0.0.1:8000/api/cart/checkout \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $MARYAM_TOKEN" \
+  -d '{"user_id": 1, "payment_method": "Credit Card", "shipping_address": "123 Main St"}'
+
+# 10. Confirm public read access needs no token at all
+curl -s http://127.0.0.1:8000/api/product
 ```
