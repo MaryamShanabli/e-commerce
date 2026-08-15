@@ -1,0 +1,23 @@
+# Database files (dev.db and any other SQLite files)
+*.db
+
+# Environment / secrets
+.env
+
+# Virtual environments
+.venv/
+venv/
+
+# Python bytecode
+__pycache__/
+*.pyc
+
+# Test cache and coverage
+.pytest_cache/
+.coverage
+
+# macOS
+.DS_Store
+
+# Python packaging artifacts
+*.egg-info/
