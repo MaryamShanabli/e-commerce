@@ -25,11 +25,7 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
-Now edit `.env`. The example defaults to a PostgreSQL URL; for a local setup without Postgres, use the SQLite line instead:
-
-```bash
-DATABASE_URL=sqlite:///./dev.db
-```
+Now edit `.env`. The example defaults to SQLite, so no server setup is needed for local dev. For PostgreSQL instead (production-parity testing), uncomment the Postgres line in `.env.example`:
 
 Replace `JWT_SECRET_KEY` with a long random value, and set `ADMIN_EMAIL` / `ADMIN_PASSWORD` to what you want for the first administrator.
 
