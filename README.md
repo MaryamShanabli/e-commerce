@@ -77,10 +77,11 @@ The full suite is 64 tests covering auth, admin permissions, ownership enforceme
 With the app running (see above), confirm it works end to end. Run these in order, in the same terminal session.
 
 ```bash
-# 1. Sign up a regular user
-curl -s -X POST http://127.0.0.1:8000/api/auth/sign-up \
+# 1. Sign up a regular user and capture her user id
+MARYAM_ID=$(curl -s -X POST http://127.0.0.1:8000/api/auth/sign-up \
   -H "Content-Type: application/json" \
-  -d '{"name": "Maryam", "email": "maryam@example.com", "password": "Maryam123"}'
+  -d '{"name": "Maryam", "email": "maryam@example.com", "password": "Maryam123"}' \
+  | python3 -c "import json,sys; print(json.load(sys.stdin)['id'])")
 
 # 2. Log in as Maryam and capture her token automatically
 MARYAM_TOKEN=$(curl -s -X POST http://127.0.0.1:8000/api/auth/login \
@@ -119,7 +120,7 @@ curl -s -X POST http://127.0.0.1:8000/api/category \
   -d '{"name": "Beverages"}'
 
 # 8. Add the product to Maryam's cart
-curl -s -X POST "http://127.0.0.1:8000/api/cart/add?userID=1" \
+curl -s -X POST "http://127.0.0.1:8000/api/cart/add?userID=$MARYAM_ID" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $MARYAM_TOKEN" \
   -d '{"product_id": 1, "quantity": 2}'
@@ -128,7 +129,7 @@ curl -s -X POST "http://127.0.0.1:8000/api/cart/add?userID=1" \
 curl -s -X POST http://127.0.0.1:8000/api/cart/checkout \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $MARYAM_TOKEN" \
-  -d '{"user_id": 1, "payment_method": "Credit Card", "shipping_address": "123 Main St"}'
+  -d "{\"user_id\": $MARYAM_ID, \"payment_method\": \"Credit Card\", \"shipping_address\": \"123 Main St\"}"
 
 # 10. Confirm public read access needs no token at all
 curl -s http://127.0.0.1:8000/api/product
