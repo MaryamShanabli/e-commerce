@@ -7,7 +7,7 @@ The API surface: `POST /api/auth/sign-up` and `/api/auth/login`, product/categor
 ## Prerequisites
 
 - **Python 3.10+** (developed and tested on 3.12)
-- **PostgreSQL is optional.** SQLite works for local development — see `.env.example`. Tests run entirely on an in-memory SQLite database and need nothing installed.
+- PostgreSQL is optional and available for production-parity testing. SQLite is the default for local development, already set in .env.example, no extra configuration needed.
 
 ## Setup
 
@@ -44,7 +44,7 @@ This step runs the migration that creates all seven tables (`users`, `categories
 
 ## Creating the first admin user
 
-Admin-only routes (creating/updating/deleting products and categories) require a user with admin privileges. There is no public endpoint for this — the admin is created by a script that reads `ADMIN_EMAIL` and `ADMIN_PASSWORD` from `.env`:
+Admin-only routes (creating/updating/deleting products and categories) require a user with admin privileges. There is no public endpoint for this. The admin is created by a script that reads `ADMIN_EMAIL` and `ADMIN_PASSWORD` from `.env`:
 
 ```bash
 python -m scripts.create_admin
@@ -62,7 +62,7 @@ The API is then available at **http://127.0.0.1:8000**.
 
 ## Interactive API exploration
 
-Open **http://127.0.0.1:8000/docs** for the Swagger UI — every endpoint is listed there with its request/response schemas. You can sign up, log in, and paste the returned access token into the Authorize button (`Authorization: Bearer {token}`) to exercise the authenticated routes.
+Open **http://127.0.0.1:8000/docs** for the Swagger UI. Every endpoint is listed there with its request/response schemas. You can sign up, log in, and paste the returned access token into the Authorize button (`Authorization: Bearer {token}`) to exercise the authenticated routes.
 
 ## Running the test suite
 
